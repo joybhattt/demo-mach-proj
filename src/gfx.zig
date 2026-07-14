@@ -20,12 +20,13 @@ pub const mach_systems = .{
     .on_render,
     .deinit,
     .load,
+    .snapshot,
     .process,
 };
 
 pub const process = mach.schedule(.{
     .{ Core, .snapshotStart },
-    .{ Gfx, .render },
+    .{ Gfx, .snapshot },
     .{ Core, .snapshotEnd },
 });
 
@@ -91,4 +92,4 @@ pub fn on_render(io: Io, core: *Core, gfx: *Gfx) void {
     core.windows.get(gfx.window_id, .queue).submit(&.{command});
 }
 
-pub fn render() void {}
+pub fn snapshot() void {}

@@ -23,7 +23,7 @@ pub fn recordInputEvent(self: *Self, event: Core.Event) void {
     switch (event) {
         .key_press => |data| {
             switch (data.key) {
-                .r, .g, .b ,.a => |key| {
+                .r, .g, .b => |key| {
                     self.key_press = key;
                 },
                 .q => {
@@ -45,7 +45,6 @@ pub fn logic(self: *Self, core: *Core, _: *App, gfx: *Gfx, _: *Sound) void {
             .r => gpu.Color{.a = 1, .r = 1, .g = 0, .b = 0},
             .b => gpu.Color{.a = 1, .r = 0, .g = 0, .b = 1},
             .g => gpu.Color{.a = 1, .r = 0, .g = 1, .b = 0},
-            .a => gpu.Color{.a = 0, .r = 0, .g = 0, .b = 0},
             else => unreachable,
         };
     }
