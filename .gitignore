@@ -1,0 +1,6 @@
+zig-out
+zig-pkg
+.vscode
+.cache
+.zig-cache
+example reference

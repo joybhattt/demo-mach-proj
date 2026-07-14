@@ -1,0 +1,35 @@
+.{
+    .name = .my_mach_game,
+    .fingerprint = 0x57e0b12942b79a5f,
+    .version = "0.1.0",
+    .paths = .{
+        "build.zig",
+        "build.zig.zon",
+        "src",
+    },
+    
+    .minimum_zig_version = "0.16.0-dev.3142+5ccfeb926",
+
+    .dependencies = .{
+        .mach = .{
+            .url = "git+https://code.hexops.org/hexops/mach.git#a6a06c0f21d661f4509b7ada5e91faff6816dbf9",
+            .hash = "mach-0.5.0-jXwHffQUNQCswWnPIWb74qmU_9kfpyde2Fyh-L3e-ukx",
+        },
+        .zigimg = .{
+            .url = "git+https://github.com/zigimg/zigimg.git#096115a3eeae1a4c477496d575f1f1f74865387c",
+            .hash = "zigimg-0.1.0-8_eo2mHBFwDLhWjXriR17_b7VF6qML1f98Xokp7ZZbop",
+        },
+        .truetype = .{
+            .url = "git+https://codeberg.org/andrewrk/TrueType.git#c90d976877f1dbd4014f6fa4da30139f41df366b",
+            .hash = "TrueType-1.0.0-Ne-mWFx1AQAk8u43nEzx-W3oPUGaXnuLNFa2jTStHFjj",
+        },
+        .flac = .{
+            .url = "git+https://codeberg.org/audiophile/flac?ref=v1.0.1#9f18861803f929fafbf4d785ea47bacc503f1065",
+            .hash = "flac-1.0.0-7jA7CZc0AgDu9ddW79TkGC1928nN5yfib5aviFqIWQfd",
+        },
+        .wav = .{
+            .url = "git+https://codeberg.org/audiophile/wav.git#5cbee66a02520538fadaee231c024b3dda974d02",
+            .hash = "wav-1.0.0-3a02pHkgAgB9Q13dkTKVS_6GZBx2qJkwulhsQpGMgR84",
+        },
+    },
+}
