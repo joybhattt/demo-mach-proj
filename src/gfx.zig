@@ -17,10 +17,10 @@ pub const mach_module = .gfx;
 pub const mach_depends = .{.app};
 pub const mach_systems = .{
     .init,
+    .snapshot,
     .on_render,
     .deinit,
     .load,
-    .snapshot,
     .process,
 };
 
@@ -69,7 +69,7 @@ pub fn deinit() void {}
 
 pub fn load() void {}
 
-pub fn on_render(io: Io, core: *Core, gfx: *Gfx) void {
+pub fn on_render(io: Io, core: *Core, gfx: *Gfx) !void {
     const current_view = core.windows.get(gfx.window_id, .swap_chain).getCurrentTextureView() orelse {
         return;
     };
@@ -92,4 +92,8 @@ pub fn on_render(io: Io, core: *Core, gfx: *Gfx) void {
     core.windows.get(gfx.window_id, .queue).submit(&.{command});
 }
 
-pub fn snapshot() void {}
+pub fn snapshot() void {
+    // if any change should be made to the offscreen framebuffer
+    // all the render pass should be submitted into the same queue submit for
+    // making sure we dont have the frame being rendered with few and not all renderpasses
+}

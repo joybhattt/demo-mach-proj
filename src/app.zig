@@ -31,6 +31,7 @@ pub const main = mach.schedule(.{
 window_id: mach.ObjectID,
 thread: mach.Thread,
 last_frame: Io.Timestamp,
+flip: bool,
 switch_context_to: ?config.Context.Enum,
 
 pub fn init(
@@ -59,6 +60,7 @@ pub fn init(
     snd_mod.call(.init);
     // set up the context of the application
     ctx_mod.call(.init);
+    app.flip = true;
     app.last_frame = .now(io, .real);
     app.thread = try mach.startThread(core, app_mod.id.process, core_mod, .foobar);
 }
@@ -104,5 +106,6 @@ pub fn process(
     // is processed during or right after os callback
     _ = snd_mod.concurrent(.load) catch unreachable;
     gfx_mod.call(.load);
-    gfx_mod.call(.process);
+    if(app.flip) gfx_mod.call(.process);
+    app.flip = !app.flip;
 }

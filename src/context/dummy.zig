@@ -44,21 +44,21 @@ pub inline fn deinit(
     _ = snd;
 }
 
-pub fn recordInputEvent(self: *Context, event: Core.Event) void {
+pub fn processInputEvent(self: *Context, event: Core.Event) void {
     _ = self;
     switch (event) {
         .char_input => {
-            // handle event and store it a compact form in you
+            // handle event or store it a compact form
         },
         else => {},
     }
 }
 
-pub fn recordNwkEvent(self: *Context, event: anytype) void {
+pub fn processNwkEvent(self: *Context, event: anytype) void {
     _ = self;
     switch (event) {
         .char_input => {
-            // handle event and store it a compact form in you
+            // handle event or store it a compact form
         },
         else => {},
     }
@@ -71,7 +71,7 @@ pub fn logic(
     gfx: *Gfx,
     snd: *Sound,
 ) void {
-    // conditonal app.switch_context_to = .main_menu;
+    // conditonal app.switch_context_to = .another_contex;
     _ = self;
     _ = core;
     _ = app;
