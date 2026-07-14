@@ -23,6 +23,12 @@ pub const mach_systems = .{
     .process,
 };
 
+pub const process = mach.schedule(.{
+    .{ Core, .snapshotStart },
+    .{ Gfx, .render },
+    .{ Core, .snapshotEnd },
+});
+
 window_id: mach.ObjectID,
 
 color_attach: gpu.RenderPassColorAttachment,
@@ -63,7 +69,9 @@ pub fn deinit() void {}
 pub fn load() void {}
 
 pub fn on_render(io: Io, core: *Core, gfx: *Gfx) void {
-    const current_view = core.windows.get(gfx.window_id, .swap_chain).getCurrentTextureView() orelse return;
+    const current_view = core.windows.get(gfx.window_id, .swap_chain).getCurrentTextureView() orelse {
+        return;
+    };
     defer current_view.release();
     gfx.color_attach.view = current_view;
 
@@ -83,4 +91,4 @@ pub fn on_render(io: Io, core: *Core, gfx: *Gfx) void {
     core.windows.get(gfx.window_id, .queue).submit(&.{command});
 }
 
-pub fn process() void {}
+pub fn render() void {}
