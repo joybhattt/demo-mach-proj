@@ -7,7 +7,7 @@ const gpu = mach.gpu;
 const Core = mach.Core;
 const Mod = mach.Mod;
 
-const config = @import("root").config;
+const config = @import("config.zig");
 const util = @import("root").util;
 
 pub const Gfx = @This();

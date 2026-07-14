@@ -1,7 +1,7 @@
 const std = @import("std");
 const assert = std.debug.assert;
 
-const config = @import("root").config;
+const config = @import("config.zig");
 
 const mach = @import("root").mach;
 const Core = mach.Core;
