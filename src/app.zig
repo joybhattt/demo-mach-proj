@@ -9,9 +9,9 @@ const config = @import("config.zig");
 const util = @import("root").util;
 
 pub const App = @This();
-const Gfx = @import("gfx.zig");
-const Sound = @import("sound.zig");
-const Context = @import("context.zig");
+const Gfx = @import("root").Gfx;
+const Sound = @import("root").Sound;
+const Context = @import("root").Context;
 
 pub const mach_module = .app;
 
@@ -90,7 +90,7 @@ pub fn process(
     snd_mod: Mod(Sound),
 ) void {
     const delta_us = app.last_frame.untilNow(io, .real).toMicroseconds();
-    if (config.Tick.frame_us > delta_us) {
+    if (config.App.frame_us > delta_us) {
         const remaining_us = config.Tick.frame_us - delta_us;
         util.sleep.precise(io, .fromMicroseconds(remaining_us), .real) catch unreachable;
     }

@@ -3,9 +3,9 @@ const Core = mach.Core;
 const Mod = mach.Mod;
 
 const Context = @This();
-const Gfx = @import("../gfx.zig");
-const Sound = @import("../sound.zig");
-const App = @import("../app.zig");
+const Gfx = @import("root").Gfx;
+const Sound = @import("root").Sound;
+const App = @import("root").App;
 
 const mach_module = .dummy;
 

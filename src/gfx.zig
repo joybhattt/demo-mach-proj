@@ -11,7 +11,7 @@ const config = @import("config.zig");
 const util = @import("root").util;
 
 pub const Gfx = @This();
-const App = @import("app.zig");
+const App = @import("root").App;
 
 pub const mach_module = .gfx;
 pub const mach_depends = .{.app};
