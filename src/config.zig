@@ -14,3 +14,24 @@ pub const Window = struct {
     pub const transparent: bool = false;
     pub const vsync_mode: mach.Core.VSyncMode = .double;
 };
+
+pub const Context = struct {
+    const Ctx = @import("root").Context;
+
+    pub const entry_point = Ctx.MainMenu;
+
+    pub const all_modules = .{
+        Ctx.MainMenu,
+        Ctx.Dummy,
+    };
+};
+
+pub const Main = struct {
+    pub const mach_modules = mach.Modules(.{
+        mach.Core,
+        @import("app.zig"),
+        @import("gfx.zig"),
+        @import("sound.zig"),
+        @import("context/root.zig"),
+    } ++ Context.all_modules);
+};

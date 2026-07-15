@@ -6,7 +6,7 @@ const Io = std.Io;
 const Allocator = std.mem.Allocator;
 const assert = std.debug.assert;
 
-const config = @import("config.zig");
+const config = @import("root").config;
 
 const mach = @import("root").mach;
 const Core = mach.Core;
@@ -24,193 +24,78 @@ pub const mach_systems = .{
     .pollInputEvents,
     .fetchNetEvents,
     .process,
-    .processSwitch,
-    .physics,
-    .logic,
 };
 
-pub const process = mach.schedule(.{
-    .{ Context, .physics },
-    .{ Context, .logic },
-    .{ Context, .processSwitch },
-});
+pub const process = schedule_blk: {
+    const mods_tuple = config.Context.all_modules;
+    const len = @typeInfo(@TypeOf(mods_tuple)).@"struct".fields.len;
+    var entries_type: [len]type = undefined;
+    for (0..len) |ii| {
+        entries_type[ii] = @TypeOf(.{ mods_tuple[ii], .process });
+    }
+    var entries_tuple: std.meta.Tuple(&entries_type) = undefined;
+    for (0..len) |ii| {
+        entries_tuple[ii] = .{ mods_tuple[ii], .process };
+    }
+    break :schedule_blk mach.schedule(entries_tuple);
+};
 
-union_ctx: config.Context.Union,
+/// place holders
+const Net = struct {
+    const Event = struct {};
+};
+
+input_events: []const Core.Event,
+nwk_events: []const Core.Event, 
+
+active: enum_blk: {
+    const mods_tuple = config.Context.all_modules;
+    const len = @typeInfo(@TypeOf(mods_tuple)).@"struct".fields.len;
+    var field_names: [len][]const u8 = undefined;
+    const BitWidth = std.math.log2_int_ceil(usize, len);
+    const BackingType = std.meta.Int(.unsigned, BitWidth);
+    var field_values: [len]BackingType = undefined;
+    for (0..len) |ii| {
+        const mod = mods_tuple[ii];
+        if (!@hasDecl(mod, "mach_module")) {
+            @compileError("Type is missing 'pub const mach_module' declaration!");
+        }
+        field_names[ii] = @tagName(mod.mach_module);
+        field_values[ii] = @intCast(ii);
+    }
+    break :enum_blk @Enum(BackingType, .exhaustive, &field_names, &field_values);
+},
 
 pub fn init(
-    io: Io,
-    allocator: Allocator,
     ctx: *Context,
-    core: *Core,
-    app: *App,
-    snd: *Sound,
-    gfx: *Gfx,
+    entry_ctx_mod: Mod(config.Context.entry_point),
 ) !void {
-    ctx.* = undefined;
-
-    ctx.union_ctx = @unionInit(
-        config.Context.Union,
-        @tagName(config.Context.entry_point),
-        undefined,
-    );
-
-    switch (ctx.union_ctx) {
-        inline else => |*context| {
-            if (@hasDecl(@TypeOf(context.*), "init")) {
-                const target_fn = @TypeOf(context.*).init;
-                const args = injectedArgs(target_fn, .{ context, core, gfx, io, app, snd, allocator });
-                @call(.auto, target_fn, args);
-            }
+    ctx.* = .{
+        .events = .{
+            .input = &.{},
+            .network = &.{},
         },
-    }
+        .active = config.Context.entry_point.mach_module,
+    };
+    entry_ctx_mod.call(.init);
 }
 
 pub fn deinit(
-    io: Io,
-    allocator: Allocator,
     ctx: *Context,
-    core: *Core,
-    app: *App,
-    gfx: *Gfx,
-    snd: *Sound,
 ) void {
-    switch (ctx.union_ctx) {
-        inline else => |*context| {
-            if (@hasDecl(@TypeOf(context.*), "deinit")) {
-                const target_fn = @TypeOf(context.*).deinit;
-                const args = injectedArgs(target_fn, .{ context, core, gfx, io, app, snd, allocator });
-                @call(.auto, target_fn, args);
-            }
-        },
-    }
-}
-
-pub fn processSwitch(
-    io: Io,
-    allocator: Allocator,
-    ctx: *Context,
-    core: *Core,
-    app: *App,
-    gfx: *Gfx,
-    snd: *Sound,
-    ctx_mod: Mod(Context),
-) void {
-    const ctx_tag = app.switch_context_to orelse return;
-    if (ctx_tag == std.meta.activeTag(ctx.union_ctx)) return;
-
-    ctx_mod.call(.deinit);
-
-    switch (ctx_tag) {
-        inline else => |tag| {
-            ctx.union_ctx = @unionInit(
-                config.Context.Union,
-                @tagName(tag),
-                undefined,
-            );
-        },
-    }
-
-    switch (ctx.union_ctx) {
-        inline else => |*context| {
-            if (@hasDecl(@TypeOf(context.*), "init")) {
-                const target_fn = @TypeOf(context.*).init;
-                const args = injectedArgs(target_fn, .{ context, core, gfx, io, app, snd, allocator });
-                @call(.auto, target_fn, args);
-            }
-        },
-    }
-}
-
-pub fn physics(
-    io: Io,
-    allocator: Allocator,
-    ctx: *Context,
-    core: *Core,
-    app: *App,
-    gfx: *Gfx,
-    snd: *Sound,
-) void {
-    switch (ctx.union_ctx) {
-        inline else => |*context| {
-            if (@hasDecl(@TypeOf(context.*), "physics")) {
-                const target_fn = @TypeOf(context.*).physics;
-                const args = injectedArgs(target_fn, .{ context, core, gfx, io, app, snd, allocator });
-                @call(.auto, target_fn, args);
-            }
-        },
-    }
-}
-
-pub fn logic(
-    io: Io,
-    allocator: Allocator,
-    ctx: *Context,
-    core: *Core,
-    app: *App,
-    gfx: *Gfx,
-    snd: *Sound,
-) void {
-    switch (ctx.union_ctx) {
-        inline else => |*context| {
-            if (@hasDecl(@TypeOf(context.*), "logic")) {
-                const target_fn = @TypeOf(context.*).logic;
-                const args = injectedArgs(target_fn, .{ context, core, gfx, io, app, snd, allocator });
-                @call(.auto, target_fn, args);
-            }
-        },
-    }
+    _ = ctx;
 }
 
 pub fn pollInputEvents(
-    io: Io,
-    allocator: Allocator,
     ctx: *Context,
     core: *Core,
-    gfx: *Gfx,
-    app: *App,
-    snd: *Sound,
 ) void {
-    var events = core.events(.default);
-    while (events.next()) |event| switch (ctx.union_ctx) {
-        inline else => |*context| {
-            if (@hasDecl(@TypeOf(context.*), "processInputEvent")) {
-                const target_fn = @TypeOf(context.*).processInputEvent;
-                const args = injectedArgs(target_fn, .{ context, core, gfx, io, app, snd, event, allocator });
-                @call(.auto, target_fn, args);
-            }
-        },
-    };
+    ctx.events.input = core.events(.default).events;
 }
 
 // NO net implementations yet
-pub fn fetchNetEvents() void {
-    // pub fn fetchNetEvents(ctx: *Context, nwk: anytype) void {
-    //     var events = nwk.events(.default);
-    //     while (events.next()) |event| switch (ctx.union_ctx) {
-    //         inline else => |*context| comptime {
-    //             if (@hasDecl(@TypeOf(context.*), "processNwkEvent"))
-    //                 context.processNwkEvent(event);
-    //         },
-    //     };
-}
-
-fn injectedArgs(comptime function: anytype, args: anytype) std.meta.ArgsTuple(@TypeOf(function)) {
-    const params = @typeInfo(@TypeOf(function)).@"fn".params;
-    var ret_params: std.meta.ArgsTuple(@TypeOf(function)) = undefined;
-
-    inline for (params, 0..) |param, ii| {
-        ret_params[ii] = matchArg(param.type.?, args);
-    }
-
-    return ret_params;
-}
-
-fn matchArg(comptime arg_type: type, args: anytype) arg_type {
-    const fields = @typeInfo(@TypeOf(args)).@"struct".fields;
-    inline for (fields) |field| {
-        if (field.type == arg_type) {
-            return @field(args, field.name);
-        }
-    }
-    @compileError("no available injection for field with type " ++ @typeName(arg_type));
+pub fn fetchNetEvents(
+    ctx: *Context,
+) void {
+    _ = ctx;
 }

@@ -1,5 +1,6 @@
 const std = @import("std");
 const Io = std.Io;
+const Allocator = std.mem.Allocator;
 
 const mach = @import("root").mach;
 const Core = mach.Core;
@@ -32,7 +33,6 @@ window_id: mach.ObjectID,
 thread: mach.Thread,
 last_frame: Io.Timestamp,
 flip: bool,
-switch_context_to: ?config.Context.Enum,
 
 pub fn init(
     io: Io,
@@ -55,9 +55,13 @@ pub fn init(
         .vsync_mode = config.Window.vsync_mode,
         .on_render = gfx_mod.id.on_render,
     });
-    app.switch_context_to = null;
-    gfx_mod.call(.init);
-    snd_mod.call(.init);
+
+    var grp: Io.Group = .init;
+    gfx_mod.concurrentGroup(&grp, .init) catch unreachable;
+    snd_mod.concurrentGroup(&grp, .init) catch unreachable;
+    std.Thread.yield() catch unreachable;
+    grp.await(io) catch unreachable;
+
     // set up the context of the application
     ctx_mod.call(.init);
     app.flip = true;
@@ -91,7 +95,7 @@ pub fn process(
 ) void {
     const delta_us = app.last_frame.untilNow(io, .real).toMicroseconds();
     if (config.App.frame_us > delta_us) {
-        const remaining_us = config.Tick.frame_us - delta_us;
+        const remaining_us = config.App.frame_us - delta_us;
         util.sleep.precise(io, .fromMicroseconds(remaining_us), .real) catch unreachable;
     }
     app.last_frame = .now(io, .real);
@@ -106,6 +110,6 @@ pub fn process(
     // is processed during or right after os callback
     _ = snd_mod.concurrent(.load) catch unreachable;
     gfx_mod.call(.load);
-    if(app.flip) gfx_mod.call(.process);
+    if (app.flip) gfx_mod.call(.process);
     app.flip = !app.flip;
 }

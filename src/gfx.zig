@@ -14,7 +14,6 @@ pub const Gfx = @This();
 const App = @import("root").App;
 
 pub const mach_module = .gfx;
-pub const mach_depends = .{.app};
 pub const mach_systems = .{
     .init,
     .snapshot,

@@ -4,3 +4,4 @@ zig-pkg
 .cache
 .zig-cache
 example reference
+.assets

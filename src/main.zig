@@ -1,13 +1,7 @@
 const std = @import("std");
 const mach = @import("root").mach;
 
-pub const Modules = mach.Modules(.{
-    mach.Core,
-    @import("app.zig"),
-    @import("gfx.zig"),
-    @import("sound.zig"),
-    @import("context.zig"),
-});
+pub const Modules = @import("root").config.Main.mach_modules;
 
 pub fn main() !void {
     const allocator = std.heap.c_allocator;

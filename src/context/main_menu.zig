@@ -6,14 +6,27 @@ const gpu = mach.sysgpu.sysgpu;
 const Core = mach.Core;
 const Mod = mach.Mod;
 
-const Gfx = @import("../gfx.zig");
-const Sound = @import("../sound.zig");
-const App = @import("../app.zig");
-
+const Gfx = @import("root").Gfx;
+const Context = @import("root").Context;
 const Self = @This();
 
-pub fn processInputEvent(event: Core.Event, gfx: *Gfx, io: Io, core: *Core) void {
-    switch (event) {
+pub const mach_module = .main_menu;
+pub const mach_systems = .{
+    .init,
+    .process,
+};
+
+pub fn init() void {}
+
+pub fn process(
+    io: Io,
+    core: *Core,
+    ctx: *Context,
+    gfx: *Gfx,
+) void {
+    if (ctx.active != .main_menu) return;
+
+    for (ctx.input_events) |*event| switch (event.*) {
         .key_press => |data| {
             switch (data.key) {
                 .r, .g, .b => |key| {
@@ -26,11 +39,12 @@ pub fn processInputEvent(event: Core.Event, gfx: *Gfx, io: Io, core: *Core) void
                         else => unreachable,
                     };
                 },
-                .q => { core.exit(); },
+                .q => core.exit(),
+                .d => ctx.active = .dummy,
                 else => {},
             }
         },
         .close => core.exit(),
         else => {},
-    }
+    };
 }
