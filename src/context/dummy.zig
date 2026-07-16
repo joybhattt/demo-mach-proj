@@ -1,18 +1,26 @@
+// general aliases in all mach modules
+
 const std = @import("std");
 const Io = std.Io;
+const Allocator = std.mem.Allocator;
+
+const print = std.debug.print;
+const assert = std.debug.assert;
 
 const mach = @import("root").mach;
-const gpu = mach.sysgpu.sysgpu;
-const Core = mach.Core;
 const Mod = mach.Mod;
+const Core = mach.Core;
+const ObjID = mach.ObjectID;
+const FnID = mach.FunctionID;
 
-const Context = @import("root").Context;
+const App = @import("root").App;
 
 pub const mach_module = .dummy;
 pub const mach_systems = .{.process};
 
-pub fn process(ctx: *Context) void {
-    if (ctx.active != .dummy) return;
-    std.debug.print("switced to dummy\n", .{});
-    ctx.active = .main_menu;
+pub fn process(app: *App) void {
+    if (app.current_context != .dummy) return;
+    print("constext switced to dummy\n", .{});
+    defer print("context switched to main_menu\n", .{});
+    app.current_context = .main_menu;
 }

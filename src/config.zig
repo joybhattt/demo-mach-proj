@@ -18,7 +18,8 @@ pub const Window = struct {
 pub const Context = struct {
     const Ctx = @import("root").Context;
 
-    pub const entry_point = Ctx.MainMenu;
+    pub const entry_context: Context.Ctx.Enum = .main_menu;
+    pub const entry_module = Ctx.MainMenu;
 
     pub const all_modules = .{
         Ctx.MainMenu,

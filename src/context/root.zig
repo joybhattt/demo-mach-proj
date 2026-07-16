@@ -21,8 +21,6 @@ pub const mach_module = .context;
 pub const mach_systems = .{
     .init,
     .deinit,
-    .pollInputEvents,
-    .fetchNetEvents,
     .process,
 };
 
@@ -40,15 +38,7 @@ pub const process = schedule_blk: {
     break :schedule_blk mach.schedule(entries_tuple);
 };
 
-/// place holders
-const Net = struct {
-    const Event = struct {};
-};
-
-input_events: []const Core.Event,
-nwk_events: []const Core.Event, 
-
-active: enum_blk: {
+pub const Enum = enum_blk: {
     const mods_tuple = config.Context.all_modules;
     const len = @typeInfo(@TypeOf(mods_tuple)).@"struct".fields.len;
     var field_names: [len][]const u8 = undefined;
@@ -64,37 +54,17 @@ active: enum_blk: {
         field_values[ii] = @intCast(ii);
     }
     break :enum_blk @Enum(BackingType, .exhaustive, &field_names, &field_values);
-},
+};
 
 pub fn init(
-    ctx: *Context,
-    entry_ctx_mod: Mod(config.Context.entry_point),
-) !void {
-    ctx.* = .{
-        .events = .{
-            .input = &.{},
-            .network = &.{},
-        },
-        .active = config.Context.entry_point.mach_module,
-    };
+    app: *App,
+    entry_ctx_mod: Mod(config.Context.entry_module),
+) void {
+    app.current_context = config.Context.entry_context;
     entry_ctx_mod.call(.init);
 }
 
 pub fn deinit(
-    ctx: *Context,
-) void {
-    _ = ctx;
-}
-
-pub fn pollInputEvents(
-    ctx: *Context,
-    core: *Core,
-) void {
-    ctx.events.input = core.events(.default).events;
-}
-
-// NO net implementations yet
-pub fn fetchNetEvents(
     ctx: *Context,
 ) void {
     _ = ctx;

@@ -1,10 +1,17 @@
+// general aliases in all mach modules
+
 const std = @import("std");
 const Io = std.Io;
 const Allocator = std.mem.Allocator;
 
+const print = std.debug.print;
+const assert = std.debug.assert;
+
 const mach = @import("root").mach;
-const Core = mach.Core;
 const Mod = mach.Mod;
+const Core = mach.Core;
+const ObjID = mach.ObjectID;
+const FnID = mach.FunctionID;
 
 const config = @import("config.zig");
 const util = @import("root").util;
@@ -29,10 +36,11 @@ pub const main = mach.schedule(.{
     .{ Core, .main },
 });
 
-window_id: mach.ObjectID,
+window_id: ObjID,
 thread: mach.Thread,
 last_frame: Io.Timestamp,
 flip: bool,
+current_context: Context.Enum,
 
 pub fn init(
     io: Io,
@@ -100,16 +108,12 @@ pub fn process(
     }
     app.last_frame = .now(io, .real);
 
-    // needs a mutex and then copies the events buffer
-    var network_events = ctx_mod.concurrent(.fetchNetEvents) catch unreachable;
-    ctx_mod.call(.pollInputEvents);
-    network_events.await(io);
-
     ctx_mod.call(.process);
 
-    // is processed during or right after os callback
     _ = snd_mod.concurrent(.load) catch unreachable;
     gfx_mod.call(.load);
+
+    // render loop at half frame_rate
     if (app.flip) gfx_mod.call(.process);
     app.flip = !app.flip;
 }

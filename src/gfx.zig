@@ -1,12 +1,19 @@
+// general aliases in all mach modules
+
 const std = @import("std");
 const Io = std.Io;
+const Allocator = std.mem.Allocator;
+
+const print = std.debug.print;
+const assert = std.debug.assert;
 
 const mach = @import("root").mach;
-const gpu = mach.gpu;
-
-const Core = mach.Core;
 const Mod = mach.Mod;
+const Core = mach.Core;
+const ObjID = mach.ObjectID;
+const FnID = mach.FunctionID;
 
+const gpu = mach.sysgpu.sysgpu;
 const config = @import("config.zig");
 const util = @import("root").util;
 
@@ -29,10 +36,9 @@ pub const process = mach.schedule(.{
     .{ Core, .snapshotEnd },
 });
 
-window_id: mach.ObjectID,
+window_id: ObjID,
 
 color_attach: gpu.RenderPassColorAttachment,
-color_mutex: std.Io.Mutex,
 rpass_desc: gpu.RenderPassDescriptor,
 
 pub fn init(
@@ -41,7 +47,6 @@ pub fn init(
 ) !void {
     gfx.* = undefined;
     gfx.window_id = app.window_id;
-    gfx.color_mutex = .init;
 
     gfx.color_attach = .{
         .clear_value = .{ .a = 1, .r = 1, .b = 1, .g = 1 },
@@ -68,7 +73,7 @@ pub fn deinit() void {}
 
 pub fn load() void {}
 
-pub fn on_render(io: Io, core: *Core, gfx: *Gfx) !void {
+pub fn on_render(core: *Core, gfx: *Gfx) !void {
     const current_view = core.windows.get(gfx.window_id, .swap_chain).getCurrentTextureView() orelse {
         return;
     };
@@ -78,9 +83,7 @@ pub fn on_render(io: Io, core: *Core, gfx: *Gfx) !void {
     const encoder = core.windows.get(gfx.window_id, .device).createCommandEncoder(null);
     defer encoder.release();
 
-    gfx.color_mutex.lock(io) catch unreachable;
     const rpass = encoder.beginRenderPass(&gfx.rpass_desc);
-    gfx.color_mutex.unlock(io);
     defer rpass.release();
 
     rpass.end();

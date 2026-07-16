@@ -1,0 +1,1 @@
+pub const Interactable = @import("interactable.zig").Interactable;

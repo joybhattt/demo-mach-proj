@@ -8,6 +8,7 @@ pub const config = @import("config.zig");
 
 pub const util = @import("util/root.zig");
 pub const vector = @import("vector/root.zig");
+pub const ui = @import("user_interface/root.zig");
 
 pub const Gfx = @import("gfx.zig");
 pub const App = @import("app.zig");
